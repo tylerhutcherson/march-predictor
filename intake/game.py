@@ -1,6 +1,7 @@
 from constants import *
 import pandas as pd
 
+
 GAME_FIELDS = list(GAME_SCHEMA['columns'].keys())
 
 
@@ -47,9 +48,79 @@ class Game(object):
   def get_stat(self, arg):
     return self.__dict__[arg]
 
-  @staticmethod
-  def record_games(games, skafos, batch_size):
-    pass
-
+  @property
   def get_game(self):
     return self.__dict__
+
+
+class Season(object):
+
+  def __init__(self, skafos, season, team_id=None, team_name=None):
+    self.ska = skafos
+    if team_name and not team_id:
+      res = self.ska.engine.create_view(
+          "teams", {"keyspace": KEYSPACE,
+          "table": "teams"}, DataSourceType.Cassandra).result()
+      teams = self.ska.engine.query("SELECT team_id FROM teams where team_name = {}".format(team_name)).result()
+      if 'data' in teams:
+        self.team_id = teams['data'].get('team_id')
+      else:
+        sys.exit("Unknown team name entered or Data Engine Failure.")
+    elif team_id:
+      self.team_id = team_id
+    else:
+      sys.exit("Must provide either team_id or team_name")
+    self.season = int(season
+    # TODO figure this out
+   # self.stats = {
+   # win_count = 0
+   # loss_count = 0
+   # fgm = 0
+   # ftm = 0
+   # fga = 0
+   # fta = 0
+   # made3 = 0
+   # att3 = 0
+   # steals = 0
+   # blks = 0
+   # offreb = 0
+   # defreb = 0
+   # points = 0
+   # points_allwd = 0
+   # numot = 0
+   # turnovers = 0
+   # }
+
+  def _get_team_season_stats(self):
+    res = self.ska.engine.create_view(
+        "games", {"keyspace": KEYSPACE,
+        "table": "games_reg_season"}, DataSourceType.Cassandra).result()
+    game_query = "SELECT * FROM games WHERE w_team={} OR  l_team={} AND season={}".format((self.team_id, self.team_id, self.season))
+    self.season = self.ska.engine.query(game_query).result()['data']
+    # Go through each game of the regular season and create stats summary
+    for game in self.season:
+      if game.get('w_team') == self.team_id:
+        status = 'w'
+        win_count += 1
+        self._augment_stats(status, game)  # this would augment team stats for season with this game
+      else:
+        status = 'l'
+        loss_count += 1
+
+  # TODO make this guy
+  def _augment_stats(self, status, game):
+    #self.stats
+    pass
+
+
+def write_data(data, engine, schema, batch_size):
+  """Write batches of data to data engine."""
+  for rows in batches(data, batch_size):
+    res = engine.save(schema, list(rows)).result()
+
+
+def batches(iterable, n):
+  """Divide a single list into a list of lists of size n"""
+  batchLen = len(iterable)
+  for ndx in range(0, batchLen, n):
+    yield list(iterable[ndx:min(ndx + n, batchLen)])

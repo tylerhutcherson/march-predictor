@@ -2,11 +2,14 @@
 import os
 import pandas as pd
 from datetime import timedelta
-from game import Game
+from game import Game, write_data
+from skafossdk import *
+
+ska = Skafos()
 
 
 ## Variables
-# Location of data from march machine learning mania 2016
+# Location of initial datasets
 DATA_PREFIX = "/home/tchutch/Documents/datasets/march_madness/"
 
 # Load Data from disk
@@ -36,11 +39,10 @@ tourney_data = []
 for i, r in tourney_ext.iterrows():
   tourney_data.append(Game(r).get_game())
 
-# Write data to cleaned csvs (can be used to import to database)
-print("Writing data back to csv")
-games = pd.DataFrame.from_records(games_data)
-games.to_csv(DATA_PREFIX + "games_cleaned.csv")
-tourney = pd.DataFrame.from_records(tourney_data)
-tourney.to_csv(DATA_PREFIX + "tourney_cleaned.csv")
-teams.to_csv(DATA_PREFIX + "teams_cleaned.csv")
-print("Done.")
+# Write data to cassandra using Skafos Data Engine
+print("Writing data to cassandra tables", flush=True)
+write_data(games_data, ska.engine, GAME_SCHEMA, BATCH_SIZE)
+write_data(tourney_data, ska.engine, TOURNEY_SCHEMA, BATCH_SIZE)
+write_data(seasons.to_dict('records'), ska.engine, SEASONS_SCHEMA, BATCH_SIZE)
+write_data(teams.to_dict('records'), ska.engine, TEAMS_SCHEMA, BATCH_SIZE)
+print("Done.", flush=True)
