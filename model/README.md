@@ -1,13 +1,12 @@
-# March Madness Model Doc
+# March Madness Model Discovery
 
-Goal: Given information about the opposing teams, matchup, and intangibles,
-      predict the likelihood of team A beating team B.
-
-
-Model Style: Classification
+**Goal**: Given information about the opposing teams, matchup, and intangibles, predict the likelihood of team A beating team B.
 
 
-Features:
+**Model Style**: Classification
+
+
+**Features**:
   -  Regular Season Data (for Team A and Team B)
       -  Non-Conference Period
       -  Conference Part 1
@@ -23,5 +22,3 @@ Features:
       -  Seeds, AP Rank, RPI, BPI, Kenpom (Margin? or Raw?)
       -  Location Proximity to "Home Base"
       -  Tournament Historical Results (based on seed)
-
-

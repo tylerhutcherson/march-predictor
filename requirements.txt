@@ -1,2 +1,7 @@
-pandas==0.22.0
-skafossdk>=0.0.8
+pandas
+numpy
+scikit-learn
+scipy
+torch
+torchvision
+
