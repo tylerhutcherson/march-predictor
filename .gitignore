@@ -3,6 +3,9 @@
 .vscode
 .idea
 .dist
+.jupyter*
+.ipython*
+all*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
